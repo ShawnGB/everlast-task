@@ -1,4 +1,3 @@
-
 # Python
 __pycache__/
 *.pyc
@@ -13,7 +12,7 @@ venv/
 # Pytest
 .pytest_cache/
 .coverage
-
+htmlcov/
 
 # OS
 .DS_Store
@@ -23,3 +22,16 @@ venv/
 
 # Docker/Postgres
 db_data/
+postgres_data/
+*.log
+
+# Alembic
+migrations/__pycache__/
+migrations/*.pyc
+
+# VSCode / IDE
+.vscode/
+.idea/
+
+# Bytecode caches
+*.egg-info/
