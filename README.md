@@ -1,3 +1,4 @@
+````
 # Recruiting-Challenge: Lead-Mini-CRM
 
 ## Überblick
@@ -5,8 +6,8 @@
 Eine schlanke Fullstack-Anwendung bestehend aus:
 
 - **Backend**: FastAPI + SQLAlchemy (async) + PostgreSQL
-- **Frontend**: React + TypeScript
-- **Entwicklung**: Docker Compose für reproduzierbare Umgebung
+- **Frontend**: React + TypeScript (Platzhalter, folgt später)
+- **Entwicklung**: Docker Compose für eine reproduzierbare Umgebung
 
 ## Tech-Stack
 
@@ -19,53 +20,51 @@ Eine schlanke Fullstack-Anwendung bestehend aus:
 
    ```bash
    git clone https://github.com/ShawnGB/everlast-task.git
-   cd everlast-task
-   ```
+   cd everlast-task```
 
-2. **Environment Variablen vorbereiten**
-
-   Eine `.env` Datei aus der Vorlage erzeugen:
+2. **Environment-Datei vorbereiten**
 
    ```bash
    cp .env.example .env
    ```
 
-   Die `.env.example` enthält bereits funktionierende Defaults für den Docker-Stack:
+   Die Defaults in `.env.example` sind für Docker bereits passend gesetzt.
 
-   ```
-   DATABASE_URL=postgresql+asyncpg://user:password@db/everlast_db
-   ```
-
-3. **Backend starten**
+3. **Stack starten (Backend + Datenbank + Migrationen + Seeds)**
 
    ```bash
-   cd backend/
    docker compose up --build
    ```
 
-   Danach ist FastAPI erreichbar unter:
-   👉 `http://localhost:8000`
-   👉 Swagger UI: `http://localhost:8000/docs`
+   Dabei passiert automatisch:
+
+   * Datenbank wird initialisiert
+   * Alembic-Migrationen werden ausgeführt
+   * Seed-Daten werden idempotent eingespielt
+   * Backend startet auf Port 8000
+
+   Zugriff im Browser:
+
+   * API: [http://localhost:8000](http://localhost:8000)
+   * Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ## Wichtige Entscheidungen
 
-- **PostgreSQL** als DB: ermöglicht echte Constraints wie `UNIQUE (contact_id) WHERE is_primary`.
-- **Docker Compose**: ein Kommando für Backend + DB, keine lokale Installation nötig.
-- **SQLAlchemy 2.0 API**: moderne Typhinweise (`Mapped`, `mapped_column`).
-- **Lifespan Context**: statt `@app.on_event` für DB-Init – aktueller FastAPI-Standard.
-- **Qualität**:
-  - **Ruff** für Linting/Formatierung
-  - **Pytest** für Tests
+* **PostgreSQL** als Datenbank: unterstützt Constraints und sauberes Schema-Management
+* **Docker Compose**: ein Kommando für Backend + DB, keine lokale Installation nötig
+
+  * Ruff für Linting und Formatierung
+  * Pytest für Tests
 
 ## Tests
 
-Tests liegen im Verzeichnis `test/` und prüfen die API-Endpunkte (`contacts`, `leads`) mit **pytest** und **httpx**.  
-Die Test-DB wird dabei automatisch im Container aufgesetzt.
+Tests befinden sich im Verzeichnis `test/` und prüfen die API-Endpunkte (`contacts`, `leads`) mit **pytest** und **httpx**.
+Eine separate Test-Datenbank wird im Container verwendet.
 
 ### Ausführen
-
-Mit `make` (empfohlen):
 
 ```bash
 make test
 ```
+
+````
