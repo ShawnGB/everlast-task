@@ -1,0 +1,25 @@
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtualenv
+.venv/
+env/
+venv/
+
+# Pytest
+.pytest_cache/
+.coverage
+
+
+# OS
+.DS_Store
+
+# Local env
+.env
+
+# Docker/Postgres
+db_data/
