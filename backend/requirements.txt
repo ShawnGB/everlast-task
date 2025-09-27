@@ -6,3 +6,6 @@ pydantic>=2.0
 pydantic-settings>=2.0
 email-validator
 pytest
+pytest-asyncio
+httpx
+aiosqlite

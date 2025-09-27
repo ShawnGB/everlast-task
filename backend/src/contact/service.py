@@ -1,6 +1,7 @@
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from fastapi import HTTPException
 
 from src.contact import models, schemas
@@ -29,8 +30,13 @@ async def create_contact(
             db.add(new_email)
 
     await db.commit()
-    await db.refresh(new_contact)
-    return new_contact
+    # reload with emails eagerly loaded
+    result = await db.execute(
+        select(models.Contact)
+        .options(selectinload(models.Contact.contact_emails))
+        .where(models.Contact.id == new_contact.id)
+    )
+    return result.scalar_one()
 
 
 async def get_contact(db: AsyncSession, contact_id: int) -> models.Contact:
@@ -38,7 +44,9 @@ async def get_contact(db: AsyncSession, contact_id: int) -> models.Contact:
     Retrieve a contact by ID or raise 404 if not found.
     """
     result = await db.execute(
-        select(models.Contact).where(models.Contact.id == contact_id)
+        select(models.Contact)
+        .options(selectinload(models.Contact.contact_emails))
+        .where(models.Contact.id == contact_id)
     )
     contact = result.scalar_one_or_none()
     if not contact:
@@ -50,7 +58,9 @@ async def list_contacts(db: AsyncSession) -> List[models.Contact]:
     """
     Return a list of all contacts.
     """
-    result = await db.execute(select(models.Contact))
+    result = await db.execute(
+        select(models.Contact).options(selectinload(models.Contact.contact_emails))
+    )
     return list(result.scalars().all())
 
 
@@ -61,7 +71,9 @@ async def update_contact(
     Update a contact and optionally replace email addresses.
     """
     result = await db.execute(
-        select(models.Contact).where(models.Contact.id == contact_id)
+        select(models.Contact)
+        .options(selectinload(models.Contact.contact_emails))
+        .where(models.Contact.id == contact_id)
     )
     db_contact = result.scalar_one_or_none()
     if not db_contact:
@@ -72,7 +84,7 @@ async def update_contact(
             setattr(db_contact, field, value)
 
     if contact_update.emails is not None:
-        for email in db_contact.contact_emails:
+        for email in list(db_contact.contact_emails):
             await db.delete(email)
 
         for email_in in contact_update.emails:
@@ -84,8 +96,13 @@ async def update_contact(
             db.add(new_email)
 
     await db.commit()
-    await db.refresh(db_contact)
-    return db_contact
+    # reload with emails eagerly loaded
+    result = await db.execute(
+        select(models.Contact)
+        .options(selectinload(models.Contact.contact_emails))
+        .where(models.Contact.id == db_contact.id)
+    )
+    return result.scalar_one()
 
 
 async def delete_contact(db: AsyncSession, contact_id: int) -> None:

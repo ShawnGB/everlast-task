@@ -59,9 +59,13 @@ Eine schlanke Fullstack-Anwendung bestehend aus:
 
 ## Tests
 
-Tests laufen innerhalb des Containers:
+Tests liegen im Verzeichnis `test/` und prüfen die API-Endpunkte (`contacts`, `leads`) mit **pytest** und **httpx**.  
+Die Test-DB wird dabei automatisch im Container aufgesetzt.
+
+### Ausführen
+
+Mit `make` (empfohlen):
 
 ```bash
-docker compose run --rm backend pytest
+make test
 ```
-# everlast-task
