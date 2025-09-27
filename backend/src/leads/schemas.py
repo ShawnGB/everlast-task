@@ -1,7 +1,8 @@
 from enum import Enum
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from src.contact.schemas import ContactCreate
 
 
 class LeadStatus(str, Enum):
@@ -18,6 +19,7 @@ class LeadBase(BaseModel):
 
 class LeadCreate(LeadBase):
     primary_contact_id: Optional[int] = None
+    primary_contact: Optional[ContactCreate] = None
 
 
 class LeadUpdate(BaseModel):
@@ -32,6 +34,4 @@ class LeadRead(LeadBase):
     created_at: datetime
     primary_contact_id: Optional[int] = None
 
-    class Config:
-        from_attributes = True
-        use_enum_values = True
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)

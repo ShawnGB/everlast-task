@@ -1,4 +1,3 @@
-# test/test_leads.py
 import pytest
 
 
@@ -21,14 +20,12 @@ async def test_create_lead(client):
 
 @pytest.mark.asyncio
 async def test_get_lead(client):
-    # Erst einen Lead erstellen
     create_resp = await client.post(
         "/leads/",
         json={"name": "Beta Ltd", "domain": "beta.com"},
     )
     lead_id = create_resp.json()["id"]
 
-    # Dann abrufen
     response = await client.get(f"/leads/{lead_id}")
     assert response.status_code == 200
     data = response.json()
@@ -39,7 +36,6 @@ async def test_get_lead(client):
 
 @pytest.mark.asyncio
 async def test_list_leads(client):
-    # Sicherstellen, dass mindestens ein Lead existiert
     await client.post("/leads/", json={"name": "Gamma Inc", "domain": "gamma.com"})
 
     response = await client.get("/leads/")
@@ -51,15 +47,13 @@ async def test_list_leads(client):
 
 @pytest.mark.asyncio
 async def test_update_lead(client):
-    # Lead anlegen
     create_resp = await client.post(
         "/leads/",
         json={"name": "Delta LLC", "domain": "delta.com"},
     )
     lead_id = create_resp.json()["id"]
 
-    # Lead updaten
-    response = await client.patch(
+    response = await client.put(
         f"/leads/{lead_id}",
         json={"status": "qualified"},
     )
@@ -70,17 +64,94 @@ async def test_update_lead(client):
 
 @pytest.mark.asyncio
 async def test_delete_lead(client):
-    # Lead anlegen
     create_resp = await client.post(
         "/leads/",
         json={"name": "Epsilon GmbH", "domain": "epsilon.com"},
     )
     lead_id = create_resp.json()["id"]
 
-    # Löschen
     response = await client.delete(f"/leads/{lead_id}")
     assert response.status_code == 204
 
-    # Erneut abrufen → 404
     get_resp = await client.get(f"/leads/{lead_id}")
     assert get_resp.status_code == 404
+
+
+# -------- Erweiterte Tests --------
+
+
+@pytest.mark.asyncio
+async def test_create_lead_with_existing_contact(client):
+    # Contact anlegen
+    resp = await client.post(
+        "/contacts/",
+        json={
+            "first_name": "Charlie",
+            "last_name": "Brown",
+            "emails": [{"value": "charlie@example.com", "is_primary": True}],
+        },
+    )
+    contact_id = resp.json()["id"]
+
+    # Lead mit diesem Contact
+    resp = await client.post(
+        "/leads/",
+        json={
+            "name": "Zeta AG",
+            "domain": "zeta.com",
+            "primary_contact_id": contact_id,
+        },
+    )
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["primary_contact_id"] == contact_id
+
+
+@pytest.mark.asyncio
+async def test_create_lead_with_new_contact(client):
+    resp = await client.post(
+        "/leads/",
+        json={
+            "name": "Eta GmbH",
+            "domain": "eta.de",
+            "primary_contact": {
+                "first_name": "Lisa",
+                "last_name": "Müller",
+                "emails": [{"value": "lisa@eta.de", "is_primary": True}],
+            },
+        },
+    )
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["primary_contact_id"] is not None
+
+
+@pytest.mark.asyncio
+async def test_list_leads_with_filter(client):
+    # Lead mit Status "lost"
+    resp = await client.post(
+        "/leads/",
+        json={"name": "Theta Inc", "domain": "theta.com", "status": "lost"},
+    )
+    assert resp.status_code == 201
+
+    # Suche nach "theta" + status "lost"
+    resp = await client.get("/leads/?q=theta&status=lost&limit=10&offset=0")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert any("theta" in lead["domain"] for lead in data)
+    assert all(lead["status"] == "lost" for lead in data)
+
+
+@pytest.mark.asyncio
+async def test_update_lead_status_endpoint(client):
+    resp = await client.post(
+        "/leads/",
+        json={"name": "Iota GmbH", "domain": "iota.com"},
+    )
+    lead_id = resp.json()["id"]
+
+    resp = await client.post(f"/leads/{lead_id}/status?status=qualified")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "qualified"

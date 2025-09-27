@@ -1,5 +1,5 @@
 from typing import Optional, List
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 
 class ContactEmailBase(BaseModel):
@@ -19,8 +19,7 @@ class ContactEmailUpdate(BaseModel):
 class ContactEmailRead(ContactEmailBase):
     id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ContactBase(BaseModel):
@@ -42,5 +41,4 @@ class ContactRead(ContactBase):
     id: int
     contact_emails: List[ContactEmailRead] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
