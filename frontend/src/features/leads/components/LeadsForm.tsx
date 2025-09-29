@@ -1,19 +1,7 @@
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCreateLead } from "../hooks/useCreateLead";
-
-// Zod Schema (kein leerer String mehr erlaubt!)
-const leadSchema = z.object({
-  name: z.string().min(2, "Name muss mindestens 2 Zeichen haben"),
-  domain: z
-    .string()
-    .min(1, "Domain ist erforderlich")
-    .url("Bitte eine gültige Domain angeben (z.B. https://acme.com)"),
-  status: z.enum(["new", "qualified", "lost"]),
-});
-
-type LeadFormData = z.infer<typeof leadSchema>;
+import { CreateLeadSchema, type CreateLeadInput } from "../types";
 
 export function LeadsForm() {
   const { mutate, isPending } = useCreateLead();
@@ -23,11 +11,11 @@ export function LeadsForm() {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<LeadFormData>({
-    resolver: zodResolver(leadSchema),
+  } = useForm<CreateLeadInput>({
+    resolver: zodResolver(CreateLeadSchema),
   });
 
-  const onSubmit = (data: LeadFormData) => {
+  const onSubmit = (data: CreateLeadInput) => {
     mutate(data, {
       onSuccess: () => reset(),
     });
@@ -51,10 +39,10 @@ export function LeadsForm() {
       <div>
         <label className="block text-sm font-medium">Domain</label>
         <input
-          type="url"
+          type="text"
           {...register("domain")}
           required
-          placeholder="https://example.com"
+          placeholder="acme.com oder https://acme.com"
           className="border rounded w-full px-3 py-2"
         />
         {errors.domain && (
