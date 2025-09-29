@@ -1,7 +1,9 @@
 import { api } from "@/lib/axios";
 import type { Lead } from "../types";
 
-export async function getLeads(): Promise<Lead[]> {
-  const response = await api.get<Lead[]>("/leads/");
-  return response.data;
-}
+export const getLeads = async (q?: string): Promise<Lead[]> => {
+  const res = await api.get("/leads/", {
+    params: q ? { q } : {},
+  });
+  return res.data;
+};

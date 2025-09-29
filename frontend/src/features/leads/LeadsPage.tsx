@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { LeadsTable, LeadsSearch, LeadsForm, useLeads } from ".";
 
 export function LeadsPage() {
-  const { data: leads = [], isLoading, isError } = useLeads();
+  const [search, setSearch] = useState("");
+  const { data: leads = [], isLoading, isError } = useLeads(search);
 
   if (isLoading) return <p>Lade Leads...</p>;
   if (isError) return <p>Fehler beim Laden der Leads.</p>;
@@ -16,7 +18,7 @@ export function LeadsPage() {
       </header>
 
       <section>
-        <LeadsSearch />
+        <LeadsSearch onSearch={setSearch} />
       </section>
 
       <section>
