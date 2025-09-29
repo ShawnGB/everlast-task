@@ -34,3 +34,6 @@ export const CreateLeadSchema = z.object({
 
 export type Lead = z.infer<typeof LeadSchema>;
 export type CreateLeadInput = z.infer<typeof CreateLeadSchema>;
+
+export const UpdateLeadSchema = CreateLeadSchema.partial();
+export type UpdateLeadInput = z.infer<typeof UpdateLeadSchema>;
