@@ -3,13 +3,13 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCreateLead } from "../hooks/useCreateLead";
 
-// Zod Schema
+// Zod Schema (kein leerer String mehr erlaubt!)
 const leadSchema = z.object({
   name: z.string().min(2, "Name muss mindestens 2 Zeichen haben"),
   domain: z
     .string()
-    .url("Bitte eine gültige Domain angeben (z.B. https://acme.com)")
-    .or(z.literal("")), // leeren String erlauben
+    .min(1, "Domain ist erforderlich")
+    .url("Bitte eine gültige Domain angeben (z.B. https://acme.com)"),
   status: z.enum(["new", "qualified", "lost"]),
 });
 
@@ -40,6 +40,7 @@ export function LeadsForm() {
         <input
           type="text"
           {...register("name")}
+          required
           className="border rounded w-full px-3 py-2"
         />
         {errors.name && (
@@ -50,8 +51,9 @@ export function LeadsForm() {
       <div>
         <label className="block text-sm font-medium">Domain</label>
         <input
-          type="text"
+          type="url"
           {...register("domain")}
+          required
           placeholder="https://example.com"
           className="border rounded w-full px-3 py-2"
         />
