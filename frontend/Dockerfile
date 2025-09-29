@@ -1,21 +1,18 @@
-# --- Frontend Dockerfile ---
-
 FROM node:20-slim
 
-# Arbeitsverzeichnis im Container
 WORKDIR /app
 
-# Nur package.json & lockfile zuerst kopieren (bessere Cache-Nutzung)
-COPY package.json package-lock.json* ./
+COPY package*.json ./
 
-# Dependencies installieren
-RUN npm install
+# optional: kleine Tools für Builds (sonst gibt's oft Probleme mit npm in slim)
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 
-# Jetzt den Rest vom Code kopieren
+# 👇 hier installieren wir Rollup und das ARM-Binary direkt
+RUN npm install --legacy-peer-deps && \
+    npm install --save-dev rollup @rollup/rollup-linux-arm64-gnu
+
 COPY . .
 
-# Port freigeben (für Vite Dev Server)
 EXPOSE 5173
 
-# Standardkommando: Dev Server starten
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["npm", "run", "dev", "--", "--host"]
