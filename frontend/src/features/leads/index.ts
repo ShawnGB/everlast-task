@@ -5,5 +5,8 @@ export * from "./components/LeadsSearch";
 
 export * from "./api/getLeads";
 export * from "./api/createLead";
+export * from "./api/updateStatus";
+
 export * from "./hooks/useLeads";
 export * from "./hooks/useCreateLead";
+export * from "./hooks/useUpdateLeadStatus";
