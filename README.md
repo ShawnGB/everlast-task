@@ -1,70 +1,129 @@
-````
 # Recruiting-Challenge: Lead-Mini-CRM
 
 ## Überblick
 
-Eine schlanke Fullstack-Anwendung bestehend aus:
+Kleine, fokussierte Full-Stack-App für Lead-Verwaltung.  
+Ziel: stabiler Kern (CRUD, Suche/Filter, Validierung), sauberes Schema, reproduzierbarer Start per Docker.
 
-- **Backend**: FastAPI + SQLAlchemy (async) + PostgreSQL
-- **Frontend**: React + TypeScript (Platzhalter, folgt später)
-- **Entwicklung**: Docker Compose für eine reproduzierbare Umgebung
+- **Backend**: FastAPI + SQLAlchemy (async) + Pydantic + Alembic + PostgreSQL
+- **Frontend**: React + TypeScript + Vite (+ TanStack Query, Zod)
+- **Dev**: Docker Compose (Services & Bootstrap), Linting/Tests
+
+## Features
+
+**Leads**
+
+- Liste + Suche/Filter (Name/Domain)
+- Anlegen mit Zod-Validierung (Domain inkl. `acme.com` _oder_ `https://acme.com`)
+- Status ändern (inline, farbcodiert)
+- Bearbeiten/Löschen über Modals
+
+**Contacts**
+
+- Entität samt API (CRUD), Zod-Typen und React-Query-Hooks vorbereitet
+- Server-Seed mit Beispielkontakten
+- Hinweis: **Keine vollständige UI-Integration** im Frontend – aus Zeitgründen priorisiert (siehe Trade-offs)
 
 ## Tech-Stack
 
-- **Backend**: Python 3.11+, FastAPI, SQLAlchemy 2.x, PostgreSQL
-- **Dev-Tools**: Docker Compose, Ruff, Pytest
+**Backend**
+
+- Python 3.11+, FastAPI, SQLAlchemy 2.x (async), Pydantic
+- PostgreSQL
+- **Alembic** (DB-Migrationen)
+
+**Frontend**
+
+- React + TypeScript + Vite
+- TanStack Query (Fetching/Caching)
+- Zod (Runtime-Validierung)
+- Axios
+
+**Dev & Qualität**
+
+- Docker Compose (Orchestrierung von DB/Backend/Frontend, Bootstrap von Migrationen & Seeds)
+- Ruff/Black (Lint/Format Python)
+- ESLint (TS/React)
+- Pytest (API-Tests)
 
 ## Setup & Start
 
-1. **Repository klonen**
+### 1) Projekt klonen
 
-   ```bash
-   git clone https://github.com/ShawnGB/everlast-task.git
-   cd everlast-task```
+```bash
+git clone https://github.com/ShawnGB/everlast-task.git
+cd everlast-task
+```
 
-2. **Environment-Datei vorbereiten**
+### 2) Environment
 
-   ```bash
-   cp .env.example .env
-   ```
+```bash
+cp .env.example .env
+```
 
-   Die Defaults in `.env.example` sind für Docker bereits passend gesetzt.
+Die Defaults passen für den Docker-Start (DB-URL etc.).
 
-3. **Stack starten (Backend + Datenbank + Migrationen + Seeds)**
+### 3) Alles per Docker starten
 
-   ```bash
-   docker compose up --build
-   ```
+```bash
+docker compose up --build
+```
 
-   Dabei passiert automatisch:
+Automatisch:
 
-   * Datenbank wird initialisiert
-   * Alembic-Migrationen werden ausgeführt
-   * Seed-Daten werden idempotent eingespielt
-   * Backend startet auf Port 8000
+- Datenbank wird hochgefahren
+- **Alembic-Migrationen** laufen
+- **Seed-Daten** werden idempotent eingespielt
+- Backend startet auf **:8000**, Frontend auf **:5173**
 
-   Zugriff im Browser:
+Zugriff:
 
-   * API: [http://localhost:8000](http://localhost:8000)
-   * Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
+- API: [http://localhost:8000](http://localhost:8000)
+- Swagger: [http://localhost:8000/docs](http://localhost:8000/docs)
+- Frontend: [http://localhost:5173](http://localhost:5173)
 
-## Wichtige Entscheidungen
+> Optional lokal: `cd frontend && npm ci && npm run dev` (wenn man das Frontend außerhalb von Docker starten möchte).
 
-* **PostgreSQL** als Datenbank: unterstützt Constraints und sauberes Schema-Management
-* **Docker Compose**: ein Kommando für Backend + DB, keine lokale Installation nötig
+## API-Kurzüberblick
 
-  * Ruff für Linting und Formatierung
-  * Pytest für Tests
+**Leads**
+
+- `GET /leads/` – Liste (Query: `q`, `status`, `limit`, `offset`)
+- `POST /leads/` – anlegen
+- `GET /leads/{id}` – Detail
+- `PUT /leads/{id}` – aktualisieren
+- `DELETE /leads/{id}` – löschen
+
+**Contacts**
+
+- `GET /contacts/` – Liste
+- `POST /contacts/` – anlegen
+- `PUT /contacts/{id}` – aktualisieren
+- `DELETE /contacts/{id}` – löschen
+
+Swagger zeigt alle Schemas & Parameter.
 
 ## Tests
 
-Tests befinden sich im Verzeichnis `test/` und prüfen die API-Endpunkte (`contacts`, `leads`) mit **pytest** und **httpx**.
-Eine separate Test-Datenbank wird im Container verwendet.
-
-### Ausführen
+API-Tests mit **pytest**/**httpx**, eigene Test-DB im Container.
 
 ```bash
 make test
 ```
 
-````
+## Architektur & Notizen
+
+- **Validierung**: Pydantic im Backend, Zod im Frontend. Felder werden am Client _und_ Server geprüft. Domain-Regex erlaubt Werte _mit_ und _ohne_ Protokoll.
+- **State/Fetched Data**: TanStack Query (schreibt invalidieren automatisch nach Mutationen).
+- **Migrationen/Seeds**: Alembic für Schema; Seeds sind idempotent.
+
+**Trade-offs (Zeitbudget)**
+
+- Kontakte sind fachlich & technisch vorbereitet (Datenmodell, Endpoints, Zod-Typen, Hooks).
+  Die **UI-Integration** (Bearbeiten/Hinzufügen im Lead-Modal) ist bewusst nicht finalisiert, um den stabilen Lead-Kern fertigzustellen.
+
+## Nächste Schritte (wenn mehr Zeit)
+
+- UI-Integration der Kontakte im Lead-Edit-Flow (einschl. E-Mail-Handling)
+- E2E-Tests/Vitest für das Frontend
+- kleinere UX-Verbesserungen (Optimistic Updates, Toasts)
